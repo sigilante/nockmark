@@ -335,3 +335,8 @@ build/
 doc/*.aux
 doc/*.log
 doc/*.out
+
+# Python
+dist/
+__pycache__/
+*.egg-info/
