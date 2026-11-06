@@ -1,0 +1,148 @@
+%% nockmark.sty -- annotated code fragments, drawn with TikZ
+%% Copyright (c) 2026 Sigilante. Released under the MIT License; see LICENSE.
+%%
+%% A fragment is a column of code lines.  Pieces of a line are plain code or
+%% boxed spans; a boxed span can carry a note in a right-hand column (with an
+%% arrow to the end of its line) or a note set directly beneath it.  Headings
+%% and dotted rules divide a fragment into parts.  Made for Nock, which has
+%% no layout of its own, but any monospaced code works.
+%%
+%%   \begin{nockmark}[<keys>]
+%%     \nkheading{Static sites}
+%%     \nkline{\nk{[8 [1 0]}}
+%%     \nkline[1]{\nk{8 }\nkstatic{s1}{[1 \nkmeta{B}]}}
+%%     \nknote{s1}{a literal formula}
+%%     \nkrule
+%%     \nkline{\nk{[2 [0 1] }\nkdynamic{d1}{[1 4] [1 0 1]}\nk{]}}
+%%     \nknotebelow{d1}{built at run time}
+%%   \end{nockmark}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{nockmark}[2026/11/06 v0.1.0 Annotated code fragments]
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+
+%% ---------------------------------------------------------------- keys
+%% Lengths without units are in centimetres (TikZ's default unit).
+\pgfkeys{
+  /nockmark/.is family, /nockmark,
+  line sep/.store in      = \nk@linesep,   line sep      = 0.6,
+  indent/.store in        = \nk@indent,    indent        = 0.25,
+  heading sep/.store in   = \nk@headsep,   heading sep   = 0.75,
+  note column/.store in   = \nk@notex,     note column   = 2.9,
+  note width/.store in    = \nk@notew,     note width    = 4.9cm,
+  below width/.store in   = \nk@belww,     below width   = 7.2cm,
+  below skip/.store in    = \nk@belwskip,  below skip    = 0.45,
+  rule raise/.store in    = \nk@ruleraise, rule raise    = 0.15,
+  rule skip/.store in     = \nk@ruleskip,  rule skip     = 0.4,
+  box gap/.store in       = \nk@boxgap,    box gap       = 1.6pt,
+  code font/.store in     = \nk@codefont,  code font     = \ttfamily\footnotesize,
+  note font/.store in     = \nk@notefont,  note font     = \scriptsize,
+  heading font/.store in  = \nk@headfont,  heading font  = \footnotesize\itshape,
+  meta font/.store in     = \nk@metafont,  meta font     = \rmfamily\itshape,
+}
+\newcommand\nockmarkset[1]{\pgfkeys{/nockmark,#1}}
+
+%% ---------------------------------------------------------------- styles
+%% Restyle with \tikzset, e.g. \tikzset{nk dynamic/.style={nk box, dotted}},
+%% or define a new box style and pass it to \nkbox.
+\tikzset{
+  nk code/.style    = {font=\nk@codefont, inner xsep=0pt, inner ysep=0.6pt,
+                       anchor=base west},
+  nk box/.style     = {font=\nk@codefont, draw, thick, inner sep=\nk@boxgap,
+                       anchor=base west},
+  nk static/.style  = {nk box},
+  nk dynamic/.style = {nk box, dashed},
+  nk note/.style    = {font=\nk@notefont, anchor=north west, align=left,
+                       inner sep=1pt},
+  nk heading/.style = {font=\nk@headfont, anchor=base west, inner sep=0pt},
+  nk arrow/.style   = {-{Stealth}},
+  nk rule/.style    = {gray, thick, densely dotted},
+}
+
+%% ---------------------------------------------------------------- state
+\newcount\nk@lineno
+\newif\ifnk@bol
+\def\nk@sety#1{\pgfmathsetmacro\nk@tmp{#1}\global\let\nk@y\nk@tmp}
+
+%% ---------------------------------------------------------------- environment
+\newenvironment{nockmark}[1][]{%
+  \pgfkeys{/nockmark,#1}%
+  \global\nk@lineno=0
+  \gdef\nk@y{0}%
+  \begin{tikzpicture}
+    \coordinate (nk@nx) at (\nk@notex,0);
+}{%
+  \end{tikzpicture}%
+}
+
+%% \nkline[<indent level>]{<pieces>}: one line at the next baseline.
+\newcommand\nkline[2][0]{%
+  \global\advance\nk@lineno by 1
+  \pgfmathsetmacro\nk@x{(#1)*\nk@indent}%
+  \coordinate (nk@cur) at (\nk@x,\nk@y);
+  \coordinate (nk@end) at (nk@cur);
+  \global\nk@boltrue
+  #2%
+  \coordinate (nkeol-\the\nk@lineno) at (nk@end);
+  \nk@sety{\nk@y-\nk@linesep}%
+}
+
+%% \nk{<code>}: plain code.  A trailing space is kept; use "\ " to be sure.
+\newcommand\nk[1]{%
+  \node[nk code] (nk@last) at (nk@cur) {#1};
+  \coordinate (nk@cur) at (nk@last.base east);
+  \coordinate (nk@end) at (nk@last.east);
+  \global\nk@bolfalse
+}
+
+%% \nkbox[<style>]{<name>}{<code>}: a boxed span named <name>.  At the start
+%% of a line the box is pulled left so its text lines up with plain code.
+\newcommand\nkbox[3][nk static]{%
+  \ifnk@bol\def\nk@off{-\nk@boxgap}\else\def\nk@off{\nk@boxgap}\fi
+  \node[#1] (#2) at ($(nk@cur)+(\nk@off,0)$) {#3};
+  \coordinate (nk@cur) at ($(#2.base east)+(\nk@boxgap,0)$);
+  \coordinate (nk@end) at (#2.east);
+  \expandafter\xdef\csname nk@line@#2\endcsname{\the\nk@lineno}%
+  \global\nk@bolfalse
+}
+\newcommand\nkstatic{\nkbox[nk static]}
+\newcommand\nkdynamic{\nkbox[nk dynamic]}
+
+%% \nkmeta{<name>}: a metavariable inside code, in the text face.
+\newcommand\nkmeta[1]{{\nk@metafont #1}}
+
+%% \nknote[<node options>]{<box>}{<text>}: a note in the right column, top
+%% aligned with the box, with an arrow to the end of the box's line.
+\newcommand\nknote[3][]{%
+  \node[nk note, text width=\nk@notew, #1] (#2-note) at (nk@nx |- #2.north) {#3};
+  \draw[nk arrow] (#2-note.west |- #2.east)
+    -- (nkeol-\csname nk@line@#2\endcsname |- #2.east);
+}
+
+%% \nknotebelow[<node options>]{<box>}{<text>}: a note set under the box; the
+%% next line moves down far enough to clear it.
+\newcommand\nknotebelow[3][]{%
+  \node[nk note, text width=\nk@belww, #1] (#2-note) at ($(#2.south west)+(0,-0.08)$) {#3};
+  \path (#2-note.south); \pgfgetlastxy\nk@px\nk@py
+  \pgfmathsetmacro\nk@tmp{min(\nk@y, \nk@py/28.45274 - \nk@belwskip)}%
+  \global\let\nk@y\nk@tmp
+}
+
+%% \nkheading{<text>}: a heading on the next baseline.
+\newcommand\nkheading[1]{%
+  \node[nk heading] at (0,\nk@y) {#1};
+  \nk@sety{\nk@y-\nk@headsep}%
+}
+
+%% \nkrule: a dotted rule across the fragment.
+\newcommand\nkrule{%
+  \pgfmathsetmacro\nk@r{\nk@y+\nk@ruleraise}%
+  \draw[nk rule] (-0.05,\nk@r) -- (current bounding box.east |- 0,\nk@r);
+  \nk@sety{\nk@y-\nk@ruleskip}%
+}
+
+%% \nkskip{<length in cm>}: extra vertical space before the next line.
+\newcommand\nkskip[1]{\nk@sety{\nk@y-(#1)}}
+
+\endinput

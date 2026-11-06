@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{nockmark}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,columns=fullflexible}
+\title{\texttt{nockmark}: annotated code fragments}
+\author{Sigilante}
+\date{v0.1.0, 2026-11-06}
+\begin{document}
+\maketitle
+
+\texttt{nockmark} draws a code fragment as a column of lines with boxed spans
+and notes, using TikZ.  It was made for Nock, which has no layout of its own,
+but any monospaced code works.  It runs under pdf\LaTeX, Xe\LaTeX\ and
+Lua\LaTeX.
+
+\section{Example}
+
+\begin{center}
+\begin{nockmark}
+  \nkheading{Static sites: the code travels with the literal}
+  \nkline{\nk{[8 [1 0]}}
+  \nkline[1]{\nk{8 }\nkstatic{s1}{[1 \nkmeta{B}]}}
+  \nkline[1]{\nkstatic{s2}{9 2 0 1}\nk{]}}
+  \nknote{s1}{literal formula:  a \texttt{Form} carrying \texttt{nockToSki} \textit{B}}
+  \nknote{s2}{opcode~9 pulls the \texttt{Form}:  \texttt{app} runs its code}
+  \nkskip{0.3}
+  \nkline{\nk{\nkmeta{B} = [6 [5 [0 7] 4 0 6] [0 6]}}
+  \nkline[4]{\nkstatic{s3}{9 2 [0 2] [4 0 6] 0 7}\nk{]}}
+  \nknotebelow{s3}{the arm is copied from the subject by \texttt{[0 2]}:  still the \texttt{Form}}
+  \nkrule
+  \nkheading{Dynamic site: a formula built from data}
+  \nkline{\nk{[2 [0 1] }\nkdynamic{d1}{[1 4] [1 0 1]}\nk{]}}
+  \nknotebelow{d1}{autocons builds the plain \texttt{Cell} \texttt{[4 0 1]}:  \texttt{app} hands it to \texttt{nockI}}
+\end{nockmark}
+\end{center}
+
+\noindent The source:
+\begin{lstlisting}
+\begin{nockmark}
+  \nkheading{Static sites: the code travels with the literal}
+  \nkline{\nk{[8 [1 0]}}
+  \nkline[1]{\nk{8 }\nkstatic{s1}{[1 \nkmeta{B}]}}
+  \nkline[1]{\nkstatic{s2}{9 2 0 1}\nk{]}}
+  \nknote{s1}{literal formula: a \texttt{Form} carrying ...}
+  \nknote{s2}{opcode~9 pulls the \texttt{Form}: ...}
+  \nkskip{0.3}
+  \nkline{\nk{\nkmeta{B} = [6 [5 [0 7] 4 0 6] [0 6]}}
+  \nkline[4]{\nkstatic{s3}{9 2 [0 2] [4 0 6] 0 7}\nk{]}}
+  \nknotebelow{s3}{the arm is copied from the subject ...}
+  \nkrule
+  \nkheading{Dynamic site: a formula built from data}
+  \nkline{\nk{[2 [0 1] }\nkdynamic{d1}{[1 4] [1 0 1]}\nk{]}}
+  \nknotebelow{d1}{autocons builds the plain \texttt{Cell} ...}
+\end{nockmark}
+\end{lstlisting}
+
+\section{Commands}
+
+\begin{description}
+\item[\texttt{\textbackslash begin\{nockmark\}[\emph{keys}]}] a fragment; it is a \texttt{tikzpicture}, so place it in a \texttt{figure} or \texttt{center}.
+\item[\texttt{\textbackslash nkline[\emph{n}]\{\emph{pieces}\}}] a line at the next baseline, indented $n$ steps.
+\item[\texttt{\textbackslash nk\{\emph{code}\}}] plain code.  A trailing space is kept.
+\item[\texttt{\textbackslash nkstatic\{\emph{name}\}\{\emph{code}\}}] a solid box, named for notes.
+\item[\texttt{\textbackslash nkdynamic\{\emph{name}\}\{\emph{code}\}}] a dashed box.
+\item[\texttt{\textbackslash nkbox[\emph{style}]\{\emph{name}\}\{\emph{code}\}}] a box in any TikZ style, e.g.\ one defined with \texttt{\textbackslash tikzset}.
+\item[\texttt{\textbackslash nkmeta\{\emph{x}\}}] a metavariable inside code, in the text face.
+\item[\texttt{\textbackslash nknote[\emph{opts}]\{\emph{name}\}\{\emph{text}\}}] a note in the right column, with an arrow to the end of the box's line.
+\item[\texttt{\textbackslash nknotebelow[\emph{opts}]\{\emph{name}\}\{\emph{text}\}}] a note under the box; following lines clear it.
+\item[\texttt{\textbackslash nkheading\{\emph{text}\}}, \texttt{\textbackslash nkrule}, \texttt{\textbackslash nkskip\{\emph{cm}\}}] a heading, a dotted divider, extra space.
+\item[\texttt{\textbackslash nockmarkset\{\emph{keys}\}}] set keys for every later fragment.
+\end{description}
+
+\section{Keys}
+
+Lengths without a unit are in centimetres.  Defaults in parentheses.
+
+\begin{description}
+\item[\texttt{line sep}] (0.6) baseline to baseline.
+\item[\texttt{indent}] (0.25) one indent step.
+\item[\texttt{heading sep}] (0.75) heading baseline to the next line.
+\item[\texttt{note column}] (2.9) left edge of right-column notes.
+\item[\texttt{note width}] (4.9cm), \textbf{\texttt{below width}} (7.2cm) note widths.
+\item[\texttt{below skip}] (0.45) from a below-note's bottom to the next baseline.
+\item[\texttt{rule raise}] (0.15), \textbf{\texttt{rule skip}} (0.4) rule placement.
+\item[\texttt{box gap}] (1.6pt) box padding and spacing.
+\item[\texttt{code font}, \texttt{note font}, \texttt{heading font}, \texttt{meta font}] the faces.
+\end{description}
+
+\noindent The TikZ styles \texttt{nk code}, \texttt{nk box}, \texttt{nk static},
+\texttt{nk dynamic}, \texttt{nk note}, \texttt{nk heading}, \texttt{nk arrow} and
+\texttt{nk rule} can be redefined with \texttt{\textbackslash tikzset}.
+
+\section{Other code}
+
+\begin{center}
+\begin{nockmark}[note column=5.2, note width=5cm]
+  \nkline{\nk{++\ \ dec}}
+  \nkline[1]{\nk{|=\ \ a=@}}
+  \nkline[1]{\nkstatic{h}{?<\ \ =(0 a)\ \ !!}}
+  \nknote{h}{crash on zero}
+  \nkline[1]{\nk{=+\ \ b=0}}
+  \nkline[1]{\nk{|-\ \ ?:\ \ }\nkdynamic{l}{=(a +(b))}\nk{\ \ b}}
+  \nknote{l}{the loop test}
+  \nkline[1]{\nk{\$(b +(b))}}
+\end{nockmark}
+\end{center}
+
+\end{document}
