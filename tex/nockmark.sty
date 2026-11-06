@@ -30,6 +30,7 @@
   indent/.store in        = \nk@indent,    indent        = 0.25,
   heading sep/.store in   = \nk@headsep,   heading sep   = 0.75,
   note column/.store in   = \nk@notex,     note column   = 2.9,
+  note min gap/.store in  = \nk@notemin,    note min gap  = 0.6,
   note width/.store in    = \nk@notew,     note width    = 4.9cm,
   below width/.store in   = \nk@belww,     below width   = 7.2cm,
   below skip/.store in    = \nk@belwskip,  below skip    = 0.45,
@@ -113,9 +114,12 @@
 \newcommand\nkmeta[1]{{\nk@metafont #1}}
 
 %% \nknote[<node options>]{<box>}{<text>}: a note in the right column, top
-%% aligned with the box, with an arrow to the end of the box's line.
+%% aligned with the box, with an arrow to the end of the box's line.  A line
+%% that reaches past the column pushes its note right by `note min gap'.
 \newcommand\nknote[3][]{%
-  \node[nk note, text width=\nk@notew, #1] (#2-note) at (nk@nx |- #2.north) {#3};
+  \path (nkeol-\csname nk@line@#2\endcsname); \pgfgetlastxy\nk@px\nk@py
+  \pgfmathsetmacro\nk@tmp{max(\nk@notex, \nk@px/28.45274 + \nk@notemin)}%
+  \node[nk note, text width=\nk@notew, #1] (#2-note) at (\nk@tmp,0 |- #2.north) {#3};
   \draw[nk arrow] (#2-note.west |- #2.east)
     -- (nkeol-\csname nk@line@#2\endcsname |- #2.east);
 }
