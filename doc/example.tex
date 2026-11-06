@@ -1,0 +1,20 @@
+\documentclass[border=6pt]{standalone}
+\usepackage{nockmark}
+\begin{document}
+\begin{nockmark}
+  \nkheading{Static sites: the code travels with the literal}
+  \nkline{\nk{[8 [1 0]}}
+  \nkline[1]{\nk{8 }\nkstatic{s1}{[1 \nkmeta{B}]}}
+  \nkline[1]{\nkstatic{s2}{9 2 0 1}\nk{]}}
+  \nknote{s1}{literal formula:  a \texttt{Form} carrying \texttt{nockToSki} \textit{B}}
+  \nknote{s2}{opcode~9 pulls the \texttt{Form}:  \texttt{app} runs its code}
+  \nkskip{0.3}
+  \nkline{\nk{\nkmeta{B} = [6 [5 [0 7] 4 0 6] [0 6]}}
+  \nkline[4]{\nkstatic{s3}{9 2 [0 2] [4 0 6] 0 7}\nk{]}}
+  \nknotebelow{s3}{the arm is copied from the subject by \texttt{[0 2]}:  still the \texttt{Form}}
+  \nkrule
+  \nkheading{Dynamic site: a formula built from data}
+  \nkline{\nk{[2 [0 1] }\nkdynamic{d1}{[1 4] [1 0 1]}\nk{]}}
+  \nknotebelow{d1}{autocons builds the plain \texttt{Cell} \texttt{[4 0 1]}:  \texttt{app} hands it to \texttt{nockI}}
+\end{nockmark}
+\end{document}

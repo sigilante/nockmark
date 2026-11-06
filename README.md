@@ -6,6 +6,8 @@ set under a box, headings and dotted dividers. Made for Nock, which has no
 layout of its own, but any monospaced code works. pdfLaTeX, XeLaTeX and
 LuaLaTeX.
 
+![An annotated Nock fragment drawn with nockmark](doc/example.png)
+
 ```latex
 \usepackage{nockmark}
 ...
