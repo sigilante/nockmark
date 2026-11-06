@@ -1,5 +1,7 @@
 # nockmark
 
+**Status ~2026.11.6:  Considered complete.**
+
 Annotated code fragments for LaTeX, drawn with TikZ: lines of code with solid
 or dashed boxes around spans, notes in a right-hand column with arrows, notes
 set under a box, headings and dotted dividers. Made for Nock, which has no
