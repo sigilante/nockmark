@@ -31,10 +31,12 @@
 .nockmark .nm-box {
   border: 1.5px solid currentColor;
   padding: 0.05rem 0.2rem;
-  /* Pulled left by its padding and border, so its text keeps its column. */
-  margin: 0 0.15rem 0 calc(-0.2rem - 1.5px);
+  margin: 0 0.15rem;
   border-radius: 1px;
 }
+/* At the start of a line, pulled left by its padding and border, so its
+   text keeps the line's column. */
+.nockmark .nm-box.nm-bol { margin-left: calc(-0.2rem - 1.5px); }
 .nockmark .nm-box.nm-dashed { border-style: dashed; }
 .nockmark .nm-meta {
   font-family: var(--pst-font-family-base, serif);

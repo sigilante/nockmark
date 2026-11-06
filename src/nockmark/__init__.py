@@ -184,13 +184,19 @@ def render_html(items, lexer, meta):
             rows.append('<div class="nm-skip"></div>')
         else:
             _, pieces, cols, side, below = it
-            code = []
+            code, bol = [], True
             for p in pieces:
                 if p[0] == "code":
                     code.append(highlight(p[1], lexer, meta))
+                    bol = bol and not p[1].strip()
                 else:
                     _, dashed, s, name = p
                     cls = "nm-box nm-dashed" if dashed else "nm-box"
+                    # A box that starts a line keeps its text in the line's
+                    # column; one mid-line keeps the space before it.
+                    if bol:
+                        cls += " nm-bol"
+                    bol = False
                     ident = f' data-nm="{html.escape(name)}"' if name else ""
                     code.append(f'<span class="{cls}"{ident}>{highlight(s, lexer, meta)}</span>')
             arrow = '<span class="nm-arrow" aria-hidden="true"></span>' if side else ""
